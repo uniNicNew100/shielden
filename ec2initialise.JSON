@@ -1,0 +1,84 @@
+{
+  "Resources": {
+    "ShieldenLaunchTemplate": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": { "Fn::Sub": "${AWS::StackName}-launch-template" },
+        "LaunchTemplateData": {
+          "ImageId": "{{resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}}",
+          "InstanceType": "t3.large",
+          "IamInstanceProfile": { "Name": { "Ref": "ShieldenInstanceProfile" } },
+          "SecurityGroupIds": [{ "Ref": "ShieldenSecurityGroup" }],
+          "UserData": {
+            "Fn::Base64": {
+              "Fn::Join": [
+                "",
+                [
+                  "#!/bin/bash\n",
+                  "apt-get update -y\n",
+                  "# gonna install some security applications via here!!\n"
+                ]
+              ]
+            }
+          },
+          "TagSpecifications": [
+            {
+              "ResourceType": "instance",
+              "Tags": [
+                {
+                  "Key": "environment",
+                  "Value": "development"
+                }
+              ]
+            },
+            {
+              "ResourceType": "volume",
+              "Tags": [
+                {
+                  "Key": "environment",
+                  "Value": "development"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "ShieldenInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "ShieldenInstanceRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/myCustomerManagedPolicy"
+        ]
+      }
+    },
+    "ShieldenInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "ShieldenInstanceRole"
+          }
+        ]
+      }
+    }
+  }
+} 
