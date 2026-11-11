@@ -1,5 +1,37 @@
 {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "VpcId":    { "Type": "AWS::EC2::VPC::Id" },
+    "SubnetId": { "Type": "AWS::EC2::Subnet::Id" }
+  },
   "Resources": {
+    "ShieldenInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "Service": ["ec2.amazonaws.com"] },
+            "Action": ["sts:AssumeRole"]
+          }]
+        },
+        "ManagedPolicyArns": ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
+      }
+    },
+    "ShieldenInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": { "Roles": [{ "Ref": "ShieldenInstanceRole" }] }
+    },
+    "ShieldenSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Shielden suite machine - no inbound, managed via SSM",
+        "VpcId": { "Ref": "VpcId" }
+      }
+    },
+
+    
     "ShieldenLaunchTemplate": {
       "Type": "AWS::EC2::LaunchTemplate",
       "Properties": {
@@ -10,75 +42,27 @@
           "IamInstanceProfile": { "Name": { "Ref": "ShieldenInstanceProfile" } },
           "SecurityGroupIds": [{ "Ref": "ShieldenSecurityGroup" }],
           "UserData": {
-            "Fn::Base64": {
-              "Fn::Join": [
-                "",
-                [
-                  "#!/bin/bash\n",
-                  "apt-get update -y\n",
-                  "# gonna install some security applications via here!!\n"
-                ]
-              ]
-            }
+            "Fn::Base64": "#!/bin/bash\napt update && apt upgrade -y\napt install curl -y\ncurl -sO https://packages.wazuh.com/4.14/wazuh-install.sh\nbash ./wazuh-install.sh -a"
           },
-          "TagSpecifications": [
-            {
-              "ResourceType": "instance",
-              "Tags": [
-                {
-                  "Key": "environment",
-                  "Value": "development"
-                }
-              ]
-            },
-            {
-              "ResourceType": "volume",
-              "Tags": [
-                {
-                  "Key": "environment",
-                  "Value": "development"
-                }
-              ]
-            }
-          ]
+                "BlockDeviceMappings" : [
+        {
+            "DeviceName" : "/dev/sda1",
+            "Ebs" : { "VolumeSize" : "30" }
+        }
+        ]
+          
         }
       }
     },
-    "ShieldenInstanceRole": {
-      "Type": "AWS::IAM::Role",
+    "ShieldenSuiteInstance": {
+      "Type": "AWS::EC2::Instance",
       "Properties": {
-        "RoleName": "ShieldenInstanceRole",
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
-              },
-              "Action": [
-                "sts:AssumeRole"
-              ]
-            }
-          ]
-        },
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/myCustomerManagedPolicy"
-        ]
-      }
-    },
-    "ShieldenInstanceProfile": {
-      "Type": "AWS::IAM::InstanceProfile",
-      "Properties": {
-        "Path": "/",
-        "Roles": [
-          {
-            "Ref": "ShieldenInstanceRole"
-          }
-        ]
+        "SubnetId": { "Ref": "SubnetId" },
+        "LaunchTemplate": {
+          "LaunchTemplateId": { "Ref": "ShieldenLaunchTemplate" },
+          "Version": { "Fn::GetAtt": ["ShieldenLaunchTemplate", "LatestVersionNumber"] }
+        }
       }
     }
   }
-} 
+}
