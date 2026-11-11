@@ -1,0 +1,134 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "VpcId": {
+            "Type": "AWS::EC2::VPC::Id"
+        },
+        "SubnetId": {
+            "Type": "AWS::EC2::Subnet::Id"
+        }
+    },
+    "Resources": {
+        "ShieldenInstanceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            // Allow EC2 service to assume this role so they can access the S3 bucket for DCV license files
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+                ],
+                "Policies": [
+                    {
+                         // Allow EC2 instances to access the S3 bucket for DCV license files so user can access GUI via DCV
+                        "PolicyName": "DcvLicence",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "s3:GetObject",
+                                    "Resource": {
+                                        "Fn::Sub": "arn:aws:s3:::dcv-license.${AWS::Region}/*"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        // Create an instance profile for the EC2 instances to use the IAM role
+        "ShieldenInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Roles": [
+                    {
+                        "Ref": "ShieldenInstanceRole"
+                    }
+                ]
+            }
+        },
+        "ShieldenSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Shielden suite machine - no inbound, managed via SSM",
+                "VpcId": {
+                    "Ref": "VpcId"
+                }
+            }
+        },
+        "ShieldenLaunchTemplate": {
+            "Type": "AWS::EC2::LaunchTemplate",
+            "Properties": {
+                "LaunchTemplateName": {
+                    "Fn::Sub": "${AWS::StackName}-launch-template"
+                },
+                "LaunchTemplateData": {
+                    "ImageId": "{{resolve:ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}}",
+                    "InstanceType": "t3.large",
+                    "IamInstanceProfile": {
+                        "Name": {
+                            "Ref": "ShieldenInstanceProfile"
+                        }
+                    },
+                    "SecurityGroupIds": [
+                        {
+                            "Ref": "ShieldenSecurityGroup"
+                        }
+                    ],
+                    "UserData": {
+                        "Fn::Base64": {
+                            "Fn::Sub":
+                            "#!/bin/bash\n export DEBIAN_FRONTEND=noninteractive\n export NEEDRESTART_MODE=a\n apt-get update && apt-get upgrade -y\n apt-get install -y curl ubuntu-desktop-minimal gdm3\n systemctl set-default graphical.target \n cd /tmp\n curl -sO https://d1uj6qtbmh3dt5.cloudfront.net/nice-dcv-ubuntu2404-x86_64.tgz\n tar -xzf nice-dcv-ubuntu2404-x86_64.tgz && cd nice-dcv-*-x86_64\n apt-get install -y ./nice-dcv-server_*.deb ./nice-dcv-web-viewer_*.deb ./nice-xdcv\n usermod -aG video dcv\n systemctl enable dcvserver\n useradd -m -s /bin/bash shielden && echo 'shielden:ubuntu' | chpasswd\n cd /tmp\n curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh\n bash ./wazuh-install.sh -a\n reboot"
+
+                        }
+                       
+                    },
+                    
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/sda1",
+                            "Ebs": {
+                                "VolumeSize": "30"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "ShieldenSuiteInstance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "SubnetId"
+                },
+                "LaunchTemplate": {
+                    "LaunchTemplateId": {
+                        "Ref": "ShieldenLaunchTemplate"
+                    },
+                    "Version": {
+                        "Fn::GetAtt": [
+                            "ShieldenLaunchTemplate",
+                            "LatestVersionNumber"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
