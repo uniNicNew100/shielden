@@ -35,14 +35,6 @@
                     "Ref": "ShieldenVPC"
                 },
                 "CidrBlock": "10.0.1.0/24",
-                "AvailabilityZone": {
-                     "Fn::Select": [
-                        0,
-                        {
-                            "Fn::GetAZs": ""
-                        }
-                    ]
-                },
                 "MapPublicIpOnLaunch": true
             }
         },
