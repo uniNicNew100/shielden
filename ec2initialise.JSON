@@ -155,9 +155,28 @@
                     ],
                     "UserData": {
                         "Fn::Base64": {
-                            "Fn::Sub":
-                            "#!/bin/bash\n export DEBIAN_FRONTEND=noninteractive\n export NEEDRESTART_MODE=a\n apt-get update && apt-get upgrade -y\n apt-get install -y curl ubuntu-desktop-minimal gdm3\n systemctl set-default graphical.target \n cd /tmp\n curl -sO https://d1uj6qtbmh3dt5.cloudfront.net/nice-dcv-ubuntu2404-x86_64.tgz\n tar -xzf nice-dcv-ubuntu2404-x86_64.tgz && cd nice-dcv-*-x86_64\n apt-get install -y ./nice-dcv-server_*.deb ./nice-dcv-web-viewer_*.deb ./nice-xdcv_*.deb\n usermod -aG video dcv\n systemctl enable dcvserver\n useradd -m -s /bin/bash shielden && echo 'shielden:ubuntu' | chpasswd\n cd /tmp\n curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh\n bash ./wazuh-install.sh -a\n reboot"
-
+                            "Fn::Join": ["\n",[
+                            "#!/bin/bash",
+                            "export DEBIAN_FRONTEND=noninteractive",
+                            "export NEEDRESTART_MODE=a",
+                             "apt-get update && apt-get upgrade -y",
+                            "apt-get install -y curl ubuntu-desktop-minimal gdm3",
+                            "systemctl set-default graphical.target",
+                            "cd /tmp",
+                            "curl -sO https://d1uj6qtbmh3dt5.cloudfront.net/nice-dcv-ubuntu2404-x86_64.tgz",
+                             "tar -xzf nice-dcv-ubuntu2404-x86_64.tgz && cd nice-dcv-*-x86_64",
+                            "apt-get install -y ./nice-dcv-server_*.deb ./nice-dcv-web-viewer_*.deb ./nice-xdcv_*.deb",
+                            "usermod -aG video dcv",
+                            "systemctl enable dcvserver",
+                            "useradd -m -s /bin/bash shielden && echo 'shielden:ubuntu' | chpasswd",
+                            "cd /tmp",
+                            "curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh",
+                            "bash ./wazuh-install.sh -a",
+                            "systemctl stop wazuh-manager",
+                            "sed -i '/<vulnerability-detection>/,/<\\/vulnerability-detection>/ s|<enabled>yes<enabled>|<enabled>no</enabled>|' /var/ossec/etc/ossec.conf",
+                            "rm -rf /var/ossec/queue/vd /var/ossec/queue/vd_updater /var/ossec/tmp/* /tmp/wazuh-install.sh",
+                            "reboot"
+                        ]]
                         }
                        
                     },
