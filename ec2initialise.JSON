@@ -36,7 +36,7 @@
                 },
                 "CidrBlock": "10.0.1.0/24",
                 "AvailabilityZone": {
-                     "FN::Select": [
+                     "Fn::Select": [
                         0,
                         {
                             "Fn::GetAZs": ""
