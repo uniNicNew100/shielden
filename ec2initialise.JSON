@@ -1,7 +1,87 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template to create an EC2 instance for Shielden suite, managed via SSM, with no inbound traffic allowed and DCV for GUI access.",
     
     "Resources": {
+        "ShieldenVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true
+            }   
+        },
+
+        "ShieldenInternetGateway": {
+            "Type": "AWS::EC2::InternetGateway"
+        },
+
+        "ShieldenGatewayAttachment": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "ShieldenVPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "ShieldenInternetGateway"
+                }
+            }
+        },
+
+        "ShieldenPublicSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "ShieldenVPC"
+                },
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": {
+                     "FN::Select": [
+                        0,
+                        {
+                            "Fn::GetAZs": ""
+                        }
+                    ]
+                },
+                "MapPublicIpOnLaunch": true
+            }
+        },
+
+        "ShieldenPublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "ShieldenVPC"
+                }
+            }
+        },
+
+        "ShieldenDefaultRoute": {
+            "Type": "AWS::EC2::Route",
+            "DependsOn": "ShieldenGatewayAttachment",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "ShieldenPublicRouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "ShieldenInternetGateway"
+                }
+            }
+        },
+
+        "ShieldenSubnetRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "ShieldenPublicSubnet"
+                },
+                "RouteTableId": {
+                    "Ref": "ShieldenPublicRouteTable"
+                }
+            }
+        },
+
         "ShieldenInstanceRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -58,7 +138,7 @@
             "Properties": {
                 "GroupDescription": "Shielden suite machine - no inbound traffic, managed via SSM",
                 "VpcId": {
-                    "Ref": "VpcId"
+                    "Ref": "ShieldenVPC"
                 }
             }
         },
@@ -94,6 +174,7 @@
                         {
                             "DeviceName": "/dev/sda1",
                             "Ebs": {
+                                "VolumeType": "gp3",
                                 "VolumeSize": "30"
                             }
                         }
@@ -103,9 +184,12 @@
         },
         "ShieldenSuiteInstance": {
             "Type": "AWS::EC2::Instance",
+            "DependsOn": [
+                "ShieldenSubnetRouteTableAssociation",
+                "ShieldenDefaultRoute"],
             "Properties": {
                 "SubnetId": {
-                    "Ref": "SubnetId"
+                    "Ref": "ShieldenPublicSubnet"
                 },
                 "LaunchTemplate": {
                     "LaunchTemplateId": {
