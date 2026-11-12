@@ -173,7 +173,7 @@
                             "curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh",
                             "bash ./wazuh-install.sh -a",
                             "systemctl stop wazuh-manager",
-                            "sed -i '/<vulnerability-detection>/,/<\\/vulnerability-detection>/ s|<enabled>yes<enabled>|<enabled>no</enabled>|' /var/ossec/etc/ossec.conf",
+                            "sed -i '/<vulnerability-detection>/,/<\\/vulnerability-detection>/ s|<enabled>yes</enabled>|<enabled>no</enabled>|' /var/ossec/etc/ossec.conf",
                             "mv /tmp/wazuh-install-files.tar /root/ && chmod 600 /root/wazuh-install-files.tar",
                             "rm -rf /var/ossec/queue/vd /var/ossec/queue/vd_updater /var/ossec/tmp/* /tmp/nice-dcv-* /tmp/wazuh-install.sh",
                             "apt-get clean",
@@ -188,7 +188,7 @@
                             "DeviceName": "/dev/sda1",
                             "Ebs": {
                                 "VolumeType": "gp3",
-                                "VolumeSize": "30"
+                                "VolumeSize": "50"
                             }
                         }
                     ]
