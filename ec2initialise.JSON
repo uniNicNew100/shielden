@@ -15,9 +15,10 @@
                         "Value": "ShieldenVPC"
                     }
                 ]
-                }
-            }   
-        },
+            }
+            
+        },  
+        
 
         "ShieldenInternetGateway": {
             "Type": "AWS::EC2::InternetGateway",
@@ -241,15 +242,14 @@
                             "ShieldenLaunchTemplate",
                             "LatestVersionNumber"
                         ]
-                    },
+                    }
+                },
                 "Tags": [
                     {
                         "Key": "Name",
                         "Value": "ShieldenSuiteInstance"
                     }
                 ]
-                
-                
             }
         }
     },
