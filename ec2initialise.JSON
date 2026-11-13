@@ -1,7 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "CloudFormation template to create an EC2 instance for Shielden suite, managed via SSM, with no inbound traffic allowed and DCV for GUI access.",
-    
     "Resources": {
         "ShieldenVPC": {
             "Type": "AWS::EC2::VPC",
@@ -15,10 +14,8 @@
                         "Value": "ShieldenVPC"
                     }
                 ]
-                }
-            }   
+            }
         },
-
         "ShieldenInternetGateway": {
             "Type": "AWS::EC2::InternetGateway",
             "Properties": {
@@ -30,7 +27,6 @@
                 ]
             }
         },
-
         "ShieldenGatewayAttachment": {
             "Type": "AWS::EC2::VPCGatewayAttachment",
             "Properties": {
@@ -42,7 +38,6 @@
                 }
             }
         },
-
         "ShieldenPublicSubnet": {
             "Type": "AWS::EC2::Subnet",
             "Properties": {
@@ -59,7 +54,6 @@
                 ]
             }
         },
-
         "ShieldenPublicRouteTable": {
             "Type": "AWS::EC2::RouteTable",
             "Properties": {
@@ -74,7 +68,6 @@
                 ]
             }
         },
-
         "ShieldenDefaultRoute": {
             "Type": "AWS::EC2::Route",
             "DependsOn": "ShieldenGatewayAttachment",
@@ -88,7 +81,6 @@
                 }
             }
         },
-
         "ShieldenSubnetRouteTableAssociation": {
             "Type": "AWS::EC2::SubnetRouteTableAssociation",
             "Properties": {
@@ -100,7 +92,6 @@
                 }
             }
         },
-
         "ShieldenInstanceRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -209,9 +200,7 @@
                             "reboot"
                         ]]
                         }
-                       
                     },
-                    
                     "BlockDeviceMappings": [
                         {
                             "DeviceName": "/dev/sda1",
@@ -228,7 +217,8 @@
             "Type": "AWS::EC2::Instance",
             "DependsOn": [
                 "ShieldenSubnetRouteTableAssociation",
-                "ShieldenDefaultRoute"],
+                "ShieldenDefaultRoute"
+            ],
             "Properties": {
                 "SubnetId": {
                     "Ref": "ShieldenPublicSubnet"
@@ -242,15 +232,14 @@
                             "ShieldenLaunchTemplate",
                             "LatestVersionNumber"
                         ]
-                    },
+                    }
+                },
                 "Tags": [
                     {
                         "Key": "Name",
                         "Value": "ShieldenSuiteInstance"
                     }
                 ]
-                
-                
             }
         }
     },
