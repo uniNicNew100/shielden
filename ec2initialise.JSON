@@ -191,34 +191,32 @@
                     ],
                     "UserData": {
                         "Fn::Base64": {
-                            "Fn::Join": [
-                                "\n",
-                                [
-                                    "#!/bin/bash",
-                                    "export DEBIAN_FRONTEND=noninteractive",
-                                    "export NEEDRESTART_MODE=a",
-                                    "apt-get update && apt-get upgrade -y",
-                                    "apt-get install -y curl ubuntu-desktop-minimal gdm3",
-                                    "systemctl set-default graphical.target",
-                                    "cd /tmp",
-                                    "curl -sO https://d1uj6qtbmh3dt5.cloudfront.net/nice-dcv-ubuntu2404-x86_64.tgz",
-                                    "tar -xzf nice-dcv-ubuntu2404-x86_64.tgz && cd nice-dcv-*-x86_64",
-                                    "apt-get install -y ./nice-dcv-server_*.deb ./nice-dcv-web-viewer_*.deb ./nice-xdcv_*.deb",
-                                    "usermod -aG video dcv",
-                                    "systemctl enable dcvserver",
-                                    "# This is test password for user, still need to set up script to prompt user to change password on first login",
-                                    "useradd -m -s /bin/bash shielden && echo 'shielden:ubuntu' | chpasswd",
-                                    "cd /tmp",
-                                    "curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh",
-                                    "bash ./wazuh-install.sh -a",
-                                    "systemctl stop wazuh-manager",
-                                    "sed -i '/<vulnerability-detection>/,/<\\/vulnerability-detection>/ s|<enabled>yes</enabled>|<enabled>no</enabled>|' /var/ossec/etc/ossec.conf",
-                                    "mv /tmp/wazuh-install-files.tar /root/ && chmod 600 /root/wazuh-install-files.tar",
-                                    "rm -rf /var/ossec/queue/vd /var/ossec/queue/vd_updater /var/ossec/tmp/* /tmp/nice-dcv-* /tmp/wazuh-install.sh",
-                                    "apt-get clean",
-                                    "reboot"
-                                ]
-                            ]
+                            "Fn::Join": ["\n",[
+                            "#!/bin/bash",
+                            "export DEBIAN_FRONTEND=noninteractive",
+                            "export NEEDRESTART_MODE=a",
+                            "apt-get update && apt-get upgrade -y",
+                            "#might remove GUI to save resources, but for now we will install it to allow DCV to work",
+                            "apt-get install -y curl ubuntu-desktop-minimal gdm3",
+                            "systemctl set-default graphical.target",
+                            "cd /tmp",
+                            "curl -sO https://d1uj6qtbmh3dt5.cloudfront.net/nice-dcv-ubuntu2404-x86_64.tgz",
+                            "tar -xzf nice-dcv-ubuntu2404-x86_64.tgz && cd nice-dcv-*-x86_64",
+                            "apt-get install -y ./nice-dcv-server_*.deb ./nice-dcv-web-viewer_*.deb ./nice-xdcv_*.deb",
+                            "usermod -aG video dcv",
+                            "systemctl enable dcvserver",
+                            "# This is test password for user, still need to set up script to prompt user to change password on first login",
+                            "useradd -m -s /bin/bash shielden && echo 'shielden:ubuntu' | chpasswd",
+                            "cd /tmp",
+                            "curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh",
+                            "bash ./wazuh-install.sh -a",
+                            "systemctl stop wazuh-manager",
+                            "sed -i '/<vulnerability-detection>/,/<\\/vulnerability-detection>/ s|<enabled>yes</enabled>|<enabled>no</enabled>|' /var/ossec/etc/ossec.conf",
+                            "mv /tmp/wazuh-install-files.tar /root/ && chmod 600 /root/wazuh-install-files.tar",
+                            "rm -rf /var/ossec/queue/vd /var/ossec/queue/vd_updater /var/ossec/tmp/* /tmp/nice-dcv-* /tmp/wazuh-install.sh",
+                            "apt-get clean",
+                            "reboot"
+                        ]]
                         }
                     },
                     "BlockDeviceMappings": [
