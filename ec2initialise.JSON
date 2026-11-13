@@ -129,24 +129,6 @@
                                 }
                             ]
                         }
-                    },
-                    {
-                        "PolicyName":"GitHubAccess",
-                        "PolicyDocument": {
-                            
-                            "Version": "2012-10-17",
-                            "Statement": [
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "cloudformation.sync.codeconnections.amazonaws.com"
-                                    ],
-                                    "Resource": {
-                                        "Fn::Sub": "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:*"
-                                    }
-                                }
-                            ]
-                        }
                     }
                 ]
             }
