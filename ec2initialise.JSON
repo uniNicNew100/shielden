@@ -187,6 +187,7 @@
                             "export DEBIAN_FRONTEND=noninteractive",
                             "export NEEDRESTART_MODE=a",
                             "apt-get update && apt-get upgrade -y",
+                            "might remove GUI to save resources, but for now we will install it to allow DCV to work",
                             "apt-get install -y curl ubuntu-desktop-minimal gdm3",
                             "systemctl set-default graphical.target",
                             "cd /tmp",
