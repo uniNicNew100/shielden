@@ -8,12 +8,27 @@
             "Properties": {
                 "CidrBlock": "10.0.0.0/16",
                 "EnableDnsSupport": true,
-                "EnableDnsHostnames": true
+                "EnableDnsHostnames": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ShieldenVPC"
+                    }
+                ]
+                }
             }   
         },
 
         "ShieldenInternetGateway": {
-            "Type": "AWS::EC2::InternetGateway"
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ShieldenInternetGateway"
+                    }
+                ]
+            }
         },
 
         "ShieldenGatewayAttachment": {
@@ -35,7 +50,13 @@
                     "Ref": "ShieldenVPC"
                 },
                 "CidrBlock": "10.0.1.0/24",
-                "MapPublicIpOnLaunch": true
+                "MapPublicIpOnLaunch": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ShieldenPublicSubnet"
+                    }
+                ]
             }
         },
 
@@ -44,7 +65,13 @@
             "Properties": {
                 "VpcId": {
                     "Ref": "ShieldenVPC"
-                }
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ShieldenPublicRouteTable"
+                    }
+                ]
             }
         },
 
@@ -168,6 +195,7 @@
                             "apt-get install -y ./nice-dcv-server_*.deb ./nice-dcv-web-viewer_*.deb ./nice-xdcv_*.deb",
                             "usermod -aG video dcv",
                             "systemctl enable dcvserver",
+                            "# This is test password for user, still need to set up script to prompt user to change password on first login",
                             "useradd -m -s /bin/bash shielden && echo 'shielden:ubuntu' | chpasswd",
                             "cd /tmp",
                             "curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh",
@@ -213,8 +241,29 @@
                             "ShieldenLaunchTemplate",
                             "LatestVersionNumber"
                         ]
+                    },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ShieldenSuiteInstance"
                     }
-                }
+                ]
+                
+                
+            }
+        }
+    },
+    "Outputs": {
+        "InstanceId": {
+            "Description": "ID of the Shielden suite EC2 instance to use on connect script",
+            "Value": {
+                "Ref": "ShieldenSuiteInstance"
+            }
+        },
+        "VPCId": {
+            "Description": "ID of the VPC",
+            "Value": {
+                "Ref": "ShieldenVPC"
             }
         }
     }
