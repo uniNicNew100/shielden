@@ -1,7 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "CloudFormation template to create an EC2 instance for Shielden suite, managed via SSM, with no inbound traffic allowed and DCV for GUI access.",
-    
     "Resources": {
         "ShieldenVPC": {
             "Type": "AWS::EC2::VPC",
@@ -16,10 +15,7 @@
                     }
                 ]
             }
-            
-        },  
-        
-
+        },
         "ShieldenInternetGateway": {
             "Type": "AWS::EC2::InternetGateway",
             "Properties": {
@@ -31,7 +27,6 @@
                 ]
             }
         },
-
         "ShieldenGatewayAttachment": {
             "Type": "AWS::EC2::VPCGatewayAttachment",
             "Properties": {
@@ -43,7 +38,6 @@
                 }
             }
         },
-
         "ShieldenPublicSubnet": {
             "Type": "AWS::EC2::Subnet",
             "Properties": {
@@ -60,7 +54,6 @@
                 ]
             }
         },
-
         "ShieldenPublicRouteTable": {
             "Type": "AWS::EC2::RouteTable",
             "Properties": {
@@ -75,7 +68,6 @@
                 ]
             }
         },
-
         "ShieldenDefaultRoute": {
             "Type": "AWS::EC2::Route",
             "DependsOn": "ShieldenGatewayAttachment",
@@ -89,7 +81,6 @@
                 }
             }
         },
-
         "ShieldenSubnetRouteTableAssociation": {
             "Type": "AWS::EC2::SubnetRouteTableAssociation",
             "Properties": {
@@ -101,7 +92,6 @@
                 }
             }
         },
-
         "ShieldenInstanceRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -135,6 +125,24 @@
                                     "Action": "s3:GetObject",
                                     "Resource": {
                                         "Fn::Sub": "arn:aws:s3:::dcv-license.${AWS::Region}/*"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "PolicyName":"GitHubAccess",
+                        "PolicyDocument": {
+                            
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "cloudformation.sync.codeconnections.amazonaws.com"
+                                    ],
+                                    "Resource": {
+                                        "Fn::Sub": "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:*"
                                     }
                                 }
                             ]
@@ -183,35 +191,36 @@
                     ],
                     "UserData": {
                         "Fn::Base64": {
-                            "Fn::Join": ["\n",[
-                            "#!/bin/bash",
-                            "export DEBIAN_FRONTEND=noninteractive",
-                            "export NEEDRESTART_MODE=a",
-                            "apt-get update && apt-get upgrade -y",
-                            "apt-get install -y curl ubuntu-desktop-minimal gdm3",
-                            "systemctl set-default graphical.target",
-                            "cd /tmp",
-                            "curl -sO https://d1uj6qtbmh3dt5.cloudfront.net/nice-dcv-ubuntu2404-x86_64.tgz",
-                            "tar -xzf nice-dcv-ubuntu2404-x86_64.tgz && cd nice-dcv-*-x86_64",
-                            "apt-get install -y ./nice-dcv-server_*.deb ./nice-dcv-web-viewer_*.deb ./nice-xdcv_*.deb",
-                            "usermod -aG video dcv",
-                            "systemctl enable dcvserver",
-                            "# This is test password for user, still need to set up script to prompt user to change password on first login",
-                            "useradd -m -s /bin/bash shielden && echo 'shielden:ubuntu' | chpasswd",
-                            "cd /tmp",
-                            "curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh",
-                            "bash ./wazuh-install.sh -a",
-                            "systemctl stop wazuh-manager",
-                            "sed -i '/<vulnerability-detection>/,/<\\/vulnerability-detection>/ s|<enabled>yes</enabled>|<enabled>no</enabled>|' /var/ossec/etc/ossec.conf",
-                            "mv /tmp/wazuh-install-files.tar /root/ && chmod 600 /root/wazuh-install-files.tar",
-                            "rm -rf /var/ossec/queue/vd /var/ossec/queue/vd_updater /var/ossec/tmp/* /tmp/nice-dcv-* /tmp/wazuh-install.sh",
-                            "apt-get clean",
-                            "reboot"
-                        ]]
+                            "Fn::Join": [
+                                "\n",
+                                [
+                                    "#!/bin/bash",
+                                    "export DEBIAN_FRONTEND=noninteractive",
+                                    "export NEEDRESTART_MODE=a",
+                                    "apt-get update && apt-get upgrade -y",
+                                    "apt-get install -y curl ubuntu-desktop-minimal gdm3",
+                                    "systemctl set-default graphical.target",
+                                    "cd /tmp",
+                                    "curl -sO https://d1uj6qtbmh3dt5.cloudfront.net/nice-dcv-ubuntu2404-x86_64.tgz",
+                                    "tar -xzf nice-dcv-ubuntu2404-x86_64.tgz && cd nice-dcv-*-x86_64",
+                                    "apt-get install -y ./nice-dcv-server_*.deb ./nice-dcv-web-viewer_*.deb ./nice-xdcv_*.deb",
+                                    "usermod -aG video dcv",
+                                    "systemctl enable dcvserver",
+                                    "# This is test password for user, still need to set up script to prompt user to change password on first login",
+                                    "useradd -m -s /bin/bash shielden && echo 'shielden:ubuntu' | chpasswd",
+                                    "cd /tmp",
+                                    "curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh",
+                                    "bash ./wazuh-install.sh -a",
+                                    "systemctl stop wazuh-manager",
+                                    "sed -i '/<vulnerability-detection>/,/<\\/vulnerability-detection>/ s|<enabled>yes</enabled>|<enabled>no</enabled>|' /var/ossec/etc/ossec.conf",
+                                    "mv /tmp/wazuh-install-files.tar /root/ && chmod 600 /root/wazuh-install-files.tar",
+                                    "rm -rf /var/ossec/queue/vd /var/ossec/queue/vd_updater /var/ossec/tmp/* /tmp/nice-dcv-* /tmp/wazuh-install.sh",
+                                    "apt-get clean",
+                                    "reboot"
+                                ]
+                            ]
                         }
-                       
                     },
-                    
                     "BlockDeviceMappings": [
                         {
                             "DeviceName": "/dev/sda1",
@@ -228,7 +237,8 @@
             "Type": "AWS::EC2::Instance",
             "DependsOn": [
                 "ShieldenSubnetRouteTableAssociation",
-                "ShieldenDefaultRoute"],
+                "ShieldenDefaultRoute"
+            ],
             "Properties": {
                 "SubnetId": {
                     "Ref": "ShieldenPublicSubnet"
