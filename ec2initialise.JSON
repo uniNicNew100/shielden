@@ -130,7 +130,24 @@
                             ]
                         }
                     }
-                ]
+                ],
+                "SnortPolicy": {
+                    "PolicyName": "SnortPolicy",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Action": [
+                                    "s3:GetObject"
+                                ],
+                                "Resource": {
+                                    "Fn::Sub": "arn:aws:s3:::shielden-config-nick/scripts/*"
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         },
         "ShieldenInstanceProfile": {
@@ -178,8 +195,15 @@
                             "export DEBIAN_FRONTEND=noninteractive",
                             "export NEEDRESTART_MODE=a",
                             "apt-get update && apt-get upgrade -y",
+                            "ufw default deny incoming",
+                            "ufw default allow outgoing",
+                            "ufw logging on",
+                            "ufw --force enable",
                             "#might remove GUI to save resources, but for now we will install it to allow DCV to work",
-                            "apt-get install -y curl ubuntu-desktop-minimal gdm3",
+                            "apt-get install -y curl ubuntu-desktop-minimal gdm3 snort",
+                            "snap install aws-cli --classic",
+                            "aws s3 cp s3://shielden-config-nick/scripts/configure-snort.sh /tmp/",
+                            "bash /tmp/configure-snort.sh",
                             "systemctl set-default graphical.target",
                             "cd /tmp",
                             "curl -sO https://d1uj6qtbmh3dt5.cloudfront.net/nice-dcv-ubuntu2404-x86_64.tgz",
@@ -187,8 +211,6 @@
                             "apt-get install -y ./nice-dcv-server_*.deb ./nice-dcv-web-viewer_*.deb ./nice-xdcv_*.deb",
                             "usermod -aG video dcv",
                             "systemctl enable dcvserver",
-                            "# This is test password for user, still need to set up script to prompt user to change password on first login",
-                            "useradd -m -s /bin/bash shielden && echo 'shielden:ubuntu' | chpasswd",
                             "cd /tmp",
                             "curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh",
                             "bash ./wazuh-install.sh -a",
