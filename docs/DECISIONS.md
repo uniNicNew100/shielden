@@ -70,10 +70,17 @@ Open decisions are GitHub issues with the `decision` label; when one is closed, 
 - **Why:** No longer need to manually update stack every commit. This saves me time and ensures version control.
   
 ### D10. Jira instead of Trello for the project board
-- **Date:** 16 Nov 2026
+- **Date:** 15 Nov 2026
 - **Jira:** NP-18 · **Status:** decided
 - **Options:** Jira (Scrum board with sprints, backlog, epics), Trello
-- **Why:** Started with a Trello board, however the trello board started becoming too messy and convoluted. Switching ti Jira did take some time however everything is much more organised.  
+- **Why:** Started with a Trello board, however the trello board started becoming too messy and convoluted. Switching ti Jira did take some time however everything is much more organised.
+
+### D11. Project Methodology Decision
+- **Date:** 15 Nov 2026
+- **Jira:** NP-19 · **GitHub:** #17 · **Status:** decided
+- **Options:** Waterfall/XP/Agile
+- **Chose:** scrum style Agile framework
+- **Why:** It fit best into my workflow, I usually will code small parts of the project at a time > test > fix > deploy, which fits well with Agiles sprint cycles
 
 ---
 
