@@ -1,5 +1,11 @@
 {
-  "sourceType": ["S3"],
-  "sourceInfo": ["{\"path\":\"https://cf-templates-pv3yd0upcced-eu-north-1.s3.eu-north-1.amazonaws.com/scripts/configure-snort.sh\"}"],
-  "commandLine": ["bash snort-config.sh"]
+  "PortForward": {
+    "portNumber": ["8443"],
+    "localPortNumber": ["8443"]
+  },
+  "Snort": {
+    "sourceType": ["S3"],
+    "sourceInfo": ["{\"path\":\"https://cf-templates-pv3yd0upcced-eu-north-1.s3.eu-north-1.amazonaws.com/scripts/snort-config.sh\"}"],
+    "commandLine": ["bash snort-config.sh"]
+  }
 }
