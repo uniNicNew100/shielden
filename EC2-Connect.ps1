@@ -25,4 +25,4 @@ if ($Config) {
 
 Write-Host "Opening DCV session"
 aws ssm start-session --target $instanceId --profile $prof `
-  --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["8443"],"localPortNumber":["8443"]}'
+  --document-name AWS-StartPortForwardingSession --parameters "portNumber:8443,localPortNumber:8443"
