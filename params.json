@@ -1,0 +1,5 @@
+{
+  "sourceType": ["S3"],
+  "sourceInfo": ["{\"path\":\"https://cf-templates-pv3yd0upcced-eu-north-1.s3.eu-north-1.amazonaws.com/scripts/configure-snort.sh\"}"],
+  "commandLine": ["bash snort-config.sh"]
+}
