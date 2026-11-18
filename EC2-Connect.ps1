@@ -18,11 +18,11 @@ if ($Config) {
     aws s3 cp "$PSScriptRoot\scripts\snort-config.sh" "s3://$s3Bucket/scripts/" --profile $prof
 
     Write-Host "Running config on instance"
-    $cmdID = aws ssm send-command --instance-ids $instanceId --profile $Profile --document-name "AWS-RunRemoteScript" `
+    $cmdID = aws ssm send-command --instance-ids $instanceId --profile $prof --document-name "AWS-RunRemoteScript" `
     --parameters "file://$PSScriptRoot\params.json" `
     --query "Command.CommandId" --output text
 }
 
 Write-Host "Opening DCV session"
-aws ssm start-session --target $instanceId --profile $Profile `
+aws ssm start-session --target $instanceId --profile $prof `
   --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["8443"],"localPortNumber":["8443"]}'
