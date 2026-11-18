@@ -9,7 +9,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Converts Json param file to plain text so that it can be passed to the AWS CLI command. The AWS CLI command does not accept JSON files as parameters, so we need to convert the JSON to a string and pass it as a parameter.
+#Converts Json param file to plain text so that it can be passed to the AWS CLI command. The AWS CLI command does not accept JSON files as parameters, so we need to convert the JSON to a string and pass it as a parameter.
 $AllParams = Get-Content "$PSScriptRoot\ssm-params.json" -Raw | ConvertFrom-Json
 function Get-ParamFile([string]$Name) {
     $section = $AllParams.$Name
