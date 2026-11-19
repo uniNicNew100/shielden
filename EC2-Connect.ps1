@@ -26,15 +26,29 @@ $instanceId = aws cloudformation describe-stack-resources --stack-name $StackNam
 if ($Config) {
     Write-Host "Uploading configuration scripts"
     aws s3 cp "$PSScriptRoot\scripts\snort-config.sh" "s3://$s3Bucket/scripts/" --profile $prof
+    aws s3 cp "$PSScriptRoot\scripts\user-create.sh" "s3://$s3Bucket/scripts/" --profile $prof
 
     Write-Host "Running config on instance"
     $cmdID = aws ssm send-command --instance-ids $instanceId --profile $prof --document-name "AWS-RunRemoteScript" `
     --parameters (Get-ParamFile "Snort") `
     --query "Command.CommandId" --output text
 
-     aws ssm wait command-executed --command-id $cmdId --instance-id $id --profile $Profile
-    aws ssm get-command-invocation --command-id $cmdId --instance-id $id --profile $Profile `
-      --query "{Status:Status,Output:StandardOutputContent,Errors:StandardErrorContent}"
+    Write-Host "Copying user-create script"
+    $fetchCmdId = aws ssm send-command .\user-create.sh --instance-ids $instanceId --profile $prof `
+    --document-name "AWS-RunShellScript" `
+    --parameters (Get-ParamFile "FetchUserCreate") `
+    --query "Command.CommandId" --output text
+
+    foreach ($c in @($cmdID, $fetchCmdId)) {
+        aws ssm wait command-executed --command-id $c --instance-id $instanceId --profile $prof
+        aws ssm get-command-invocation --command-id $c --instance-id $instanceId --profile $prof `
+        --query "{Status:Status,Output:StandardOutputContent,Errors:StandardErrorContent}"
+    }
+   
+    Write-Host "Create your user name and password"
+     Write-Host "Create your Shielden login:"
+    aws ssm start-session --target $instanceId --profile $prof `
+      --document-name "AWS-StartInteractiveCommand" --parameters (Get-ParamFile "UserCreate")
 }
 
 Write-Host "Opening DCV session"
