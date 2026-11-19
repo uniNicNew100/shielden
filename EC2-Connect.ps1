@@ -25,8 +25,8 @@ $instanceId = aws cloudformation describe-stack-resources --stack-name $StackNam
  
 if ($Config) {
     Write-Host "Uploading configuration scripts"
-    aws s3 cp "$PSScriptRoot\scripts\snort-config.sh" "s3://$s3Bucket/scripts/" --profile $prof
-    aws s3 cp "$PSScriptRoot\scripts\user-create.sh" "s3://$s3Bucket/scripts/" --profile $prof
+    aws s3 cp "$PSScriptRoot\snort-config.sh" "s3://$s3Bucket/scripts/" --profile $prof
+    aws s3 cp "$PSScriptRoot\user-create.sh" "s3://$s3Bucket/scripts/" --profile $prof
 
     Write-Host "Running config on instance"
     $cmdID = aws ssm send-command --instance-ids $instanceId --profile $prof --document-name "AWS-RunRemoteScript" `
@@ -34,7 +34,7 @@ if ($Config) {
     --query "Command.CommandId" --output text
 
     Write-Host "Copying user-create script"
-    $fetchCmdId = aws ssm send-command .\user-create.sh --instance-ids $instanceId --profile $prof `
+    $fetchCmdId = aws ssm send-command --instance-ids $instanceId --profile $prof `
     --document-name "AWS-RunShellScript" `
     --parameters (Get-ParamFile "FetchUserCreate") `
     --query "Command.CommandId" --output text
