@@ -1,0 +1,25 @@
+{
+  "PortForward": {
+    "portNumber": ["8443"],
+    "localPortNumber": ["8443"]
+  },
+  "Snort": {
+    "sourceType": ["S3"],
+    "sourceInfo": ["{\"path\":\"https://cf-templates-pv3yd0upcced-eu-north-1.s3.eu-north-1.amazonaws.com/scripts/snort-config.sh\"}"],
+    "commandLine": ["bash snort-config.sh"]
+  },
+  "Wazuh": {
+    "sourceType": ["S3"],
+    "sourceInfo": ["{\"path\":\"https://cf-templates-pv3yd0upcced-eu-north-1.s3.eu-north-1.amazonaws.com/scripts/wazuh-config.sh\"}"],
+    "commandLine": ["bash wazuh-config.sh"]
+  },
+  "FetchUserCreate": {
+  "commands": [
+    "/snap/bin/aws s3 cp s3://cf-templates-pv3yd0upcced-eu-north-1/scripts/user-create.sh /usr/local/sbin/user-create.sh",
+    "chmod 700 /usr/local/sbin/user-create.sh"
+  ]
+  },
+  "UserCreate": {
+    "command": ["sudo bash /usr/local/sbin/user-create.sh"]
+  }
+}
