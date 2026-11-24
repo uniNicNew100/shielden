@@ -199,6 +199,7 @@
                             "#might remove GUI to save resources, but for now we will install it to allow DCV to work",
                             "apt-get install -y curl ubuntu-desktop-minimal gdm3 snort",
                             "snap install aws-cli --classic",
+                            "snap install firefox",
                             "/snap/bin/aws s3 cp s3://cf-templates-pv3yd0upcced-eu-north-1/scripts/snort-config.sh /tmp/",
                             "bash /tmp/snort-config.sh",
                             "systemctl set-default graphical.target",
